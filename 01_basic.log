@@ -1,0 +1,240 @@
+-----------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/01_basic.log
+  log type:  text
+ opened on:  29 Aug 2022, 17:21:58
+
+. 
+. * load a dataset packaged with Stata
+. sysuse auto
+(1978 automobile data)
+
+. 
+. * print high-level information for variables in memory
+. describe
+
+Contains data from /usr/local/stata17/ado/base/a/auto.dta
+ Observations:            74                  1978 automobile data
+    Variables:            12                  13 Apr 2020 17:45
+                                              (_dta has notes)
+-----------------------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-----------------------------------------------------------------------------------------------
+make            str18   %-18s                 Make and model
+price           int     %8.0gc                Price
+mpg             int     %8.0g                 Mileage (mpg)
+rep78           int     %8.0g                 Repair record 1978
+headroom        float   %6.1f                 Headroom (in.)
+trunk           int     %8.0g                 Trunk space (cu. ft.)
+weight          int     %8.0gc                Weight (lbs.)
+length          int     %8.0g                 Length (in.)
+turn            int     %8.0g                 Turn circle (ft.)
+displacement    int     %8.0g                 Displacement (cu. in.)
+gear_ratio      float   %6.2f                 Gear ratio
+foreign         byte    %8.0g      origin     Car origin
+-----------------------------------------------------------------------------------------------
+Sorted by: foreign
+
+. 
+. * generate summary statistics for variables
+. summarize
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        make |          0
+       price |         74    6165.257    2949.496       3291      15906
+         mpg |         74     21.2973    5.785503         12         41
+       rep78 |         69    3.405797    .9899323          1          5
+    headroom |         74    2.993243    .8459948        1.5          5
+-------------+---------------------------------------------------------
+       trunk |         74    13.75676    4.277404          5         23
+      weight |         74    3019.459    777.1936       1760       4840
+      length |         74    187.9324    22.26634        142        233
+        turn |         74    39.64865    4.399354         31         51
+displacement |         74    197.2973    91.83722         79        425
+-------------+---------------------------------------------------------
+  gear_ratio |         74    3.014865    .4562871       2.19       3.89
+     foreign |         74    .2972973    .4601885          0          1
+
+. 
+. * generate correlation matrix
+. correlate
+(make ignored because string variable)
+(obs=69)
+
+             |    price      mpg    rep78 headroom    trunk   weight   length     turn displa~t
+-------------+---------------------------------------------------------------------------------
+       price |   1.0000
+         mpg |  -0.4559   1.0000
+       rep78 |   0.0066   0.4023   1.0000
+    headroom |   0.1112  -0.3996  -0.1480   1.0000
+       trunk |   0.3232  -0.5798  -0.1572   0.6608   1.0000
+      weight |   0.5478  -0.8055  -0.4003   0.4795   0.6691   1.0000
+      length |   0.4425  -0.8037  -0.3606   0.5240   0.7326   0.9478   1.0000
+        turn |   0.3302  -0.7355  -0.4961   0.4347   0.6008   0.8610   0.8631   1.0000
+displacement |   0.5479  -0.7434  -0.4119   0.4763   0.6287   0.9316   0.8621   0.8124   1.0000
+  gear_ratio |  -0.3802   0.6565   0.4103  -0.3790  -0.5107  -0.7906  -0.7232  -0.7005  -0.8381
+     foreign |  -0.0174   0.4538   0.5922  -0.3347  -0.4053  -0.6460  -0.6110  -0.6768  -0.6383
+
+             | gear_r~o  foreign
+-------------+------------------
+  gear_ratio |   1.0000
+     foreign |   0.7266   1.0000
+
+
+. 
+. * pairwise correlations
+. pwcorr price headroom mpg displacement
+
+             |    price headroom      mpg displa~t
+-------------+------------------------------------
+       price |   1.0000 
+    headroom |   0.1145   1.0000 
+         mpg |  -0.4686  -0.4138   1.0000 
+displacement |   0.4949   0.4745  -0.7056   1.0000 
+
+. 
+. * confidence intervals for various sample statistics
+. ci means mpg price, level(95)
+
+    Variable |        Obs        Mean    Std. err.       [95% conf. interval]
+-------------+---------------------------------------------------------------
+         mpg |         74     21.2973    .6725511         19.9569    22.63769
+       price |         74    6165.257    342.8719        5481.914      6848.6
+
+. ci variances mpg price, level(95)
+
+    Variable |        Obs      Variance       [95% conf. interval]
+-------------+----------------------------------------------------
+         mpg |         74      33.47205        24.8026    47.66348
+       price |         74       8699526        6446300    1.24e+07
+
+. 
+. * end session by closing logfile
+. log close
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/01_basic.log
+  log type:  text
+ closed on:  29 Aug 2022, 17:21:58
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/01_basic.log
+  log type:  text
+ opened on:  30 Aug 2022, 16:11:14
+
+. 
+. * load a dataset packaged with Stata
+. sysuse auto
+(1978 automobile data)
+
+. 
+. * print high-level information for variables in memory
+. describe
+
+Contains data from /usr/local/stata17/ado/base/a/auto.dta
+ Observations:            74                  1978 automobile data
+    Variables:            12                  13 Apr 2020 17:45
+                                              (_dta has notes)
+-----------------------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-----------------------------------------------------------------------------------------------
+make            str18   %-18s                 Make and model
+price           int     %8.0gc                Price
+mpg             int     %8.0g                 Mileage (mpg)
+rep78           int     %8.0g                 Repair record 1978
+headroom        float   %6.1f                 Headroom (in.)
+trunk           int     %8.0g                 Trunk space (cu. ft.)
+weight          int     %8.0gc                Weight (lbs.)
+length          int     %8.0g                 Length (in.)
+turn            int     %8.0g                 Turn circle (ft.)
+displacement    int     %8.0g                 Displacement (cu. in.)
+gear_ratio      float   %6.2f                 Gear ratio
+foreign         byte    %8.0g      origin     Car origin
+-----------------------------------------------------------------------------------------------
+Sorted by: foreign
+
+. 
+. * generate summary statistics for variables
+. summarize
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        make |          0
+       price |         74    6165.257    2949.496       3291      15906
+         mpg |         74     21.2973    5.785503         12         41
+       rep78 |         69    3.405797    .9899323          1          5
+    headroom |         74    2.993243    .8459948        1.5          5
+-------------+---------------------------------------------------------
+       trunk |         74    13.75676    4.277404          5         23
+      weight |         74    3019.459    777.1936       1760       4840
+      length |         74    187.9324    22.26634        142        233
+        turn |         74    39.64865    4.399354         31         51
+displacement |         74    197.2973    91.83722         79        425
+-------------+---------------------------------------------------------
+  gear_ratio |         74    3.014865    .4562871       2.19       3.89
+     foreign |         74    .2972973    .4601885          0          1
+
+. 
+. * generate correlation matrix
+. correlate
+(make ignored because string variable)
+(obs=69)
+
+             |    price      mpg    rep78 headroom    trunk   weight   length     turn displa~t
+-------------+---------------------------------------------------------------------------------
+       price |   1.0000
+         mpg |  -0.4559   1.0000
+       rep78 |   0.0066   0.4023   1.0000
+    headroom |   0.1112  -0.3996  -0.1480   1.0000
+       trunk |   0.3232  -0.5798  -0.1572   0.6608   1.0000
+      weight |   0.5478  -0.8055  -0.4003   0.4795   0.6691   1.0000
+      length |   0.4425  -0.8037  -0.3606   0.5240   0.7326   0.9478   1.0000
+        turn |   0.3302  -0.7355  -0.4961   0.4347   0.6008   0.8610   0.8631   1.0000
+displacement |   0.5479  -0.7434  -0.4119   0.4763   0.6287   0.9316   0.8621   0.8124   1.0000
+  gear_ratio |  -0.3802   0.6565   0.4103  -0.3790  -0.5107  -0.7906  -0.7232  -0.7005  -0.8381
+     foreign |  -0.0174   0.4538   0.5922  -0.3347  -0.4053  -0.6460  -0.6110  -0.6768  -0.6383
+
+             | gear_r~o  foreign
+-------------+------------------
+  gear_ratio |   1.0000
+     foreign |   0.7266   1.0000
+
+
+. 
+. * pairwise correlations
+. pwcorr price headroom mpg displacement
+
+             |    price headroom      mpg displa~t
+-------------+------------------------------------
+       price |   1.0000 
+    headroom |   0.1145   1.0000 
+         mpg |  -0.4686  -0.4138   1.0000 
+displacement |   0.4949   0.4745  -0.7056   1.0000 
+
+. 
+. * confidence intervals for various sample statistics
+. ci means mpg price, level(95)
+
+    Variable |        Obs        Mean    Std. err.       [95% conf. interval]
+-------------+---------------------------------------------------------------
+         mpg |         74     21.2973    .6725511         19.9569    22.63769
+       price |         74    6165.257    342.8719        5481.914      6848.6
+
+. ci variances mpg price, level(95)
+
+    Variable |        Obs      Variance       [95% conf. interval]
+-------------+----------------------------------------------------
+         mpg |         74      33.47205        24.8026    47.66348
+       price |         74       8699526        6446300    1.24e+07
+
+. 
+. * end session by closing logfile
+. log close
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/01_basic.log
+  log type:  text
+ closed on:  30 Aug 2022, 16:11:14
+-----------------------------------------------------------------------------------------------

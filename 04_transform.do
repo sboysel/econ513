@@ -10,7 +10,7 @@ log using 04_transform.log, replace text
 
 * load nlswork data (National Longitudinal Survey of Young Women, 14-24 years
 * old in 1968)
-webuse nlswork, clear
+use "data/nlswork.dta", clear
 summarize
 
 * important: let Stata know that this is panel data (i.e. varies over
@@ -37,6 +37,10 @@ rename age_squared age2
 * replace values if they meet certain conditions
 replace wks_work = 52 if wks_work > 52
 
+* drop a variable
+gen ln_wage_plus2 = ln_wage + 2
+drop ln_wage_plus2
+
 * recode certain values
 recode race (0 = 1 "white") (1 = 2 "black") (2 = 3 "other"), gen(race2)
 codebook race
@@ -49,4 +53,4 @@ drop if missing(age2)
 sample 25
 
 * close logfile
-close
+log close

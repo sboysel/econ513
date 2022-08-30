@@ -1,0 +1,271 @@
+-----------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/04_transform.log
+  log type:  text
+ opened on:  30 Aug 2022, 16:27:41
+
+. 
+. * load nlswork data (National Longitudinal Survey of Young Women, 14-24 years
+. * old in 1968)
+. webuse nlswork, clear
+(National Longitudinal Survey of Young Women, 14-24 years old in 1968)
+
+. summarize
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+      idcode |     28,534    2601.284    1487.359          1       5159
+        year |     28,534    77.95865    6.383879         68         88
+    birth_yr |     28,534    48.08509    3.012837         41         54
+         age |     28,510    29.04511    6.700584         14         46
+        race |     28,534    1.303392    .4822773          1          3
+-------------+---------------------------------------------------------
+         msp |     28,518    .6029175    .4893019          0          1
+     nev_mar |     28,518    .2296795    .4206341          0          1
+       grade |     28,532    12.53259    2.323905          0         18
+    collgrad |     28,534    .1680451    .3739129          0          1
+    not_smsa |     28,526    .2824441    .4501961          0          1
+-------------+---------------------------------------------------------
+      c_city |     28,526     .357218    .4791882          0          1
+       south |     28,526    .4095562    .4917605          0          1
+    ind_code |     28,193    7.692973    2.994025          1         12
+    occ_code |     28,413    4.777672    3.065435          1         13
+       union |     19,238    .2344319    .4236542          0          1
+-------------+---------------------------------------------------------
+      wks_ue |     22,830    2.548095    7.294463          0         76
+     ttl_exp |     28,534    6.215316    4.652117          0   28.88461
+      tenure |     28,101    3.123836    3.751409          0   25.91667
+       hours |     28,467    36.55956    9.869623          1        168
+    wks_work |     27,831    53.98933    29.03232          0        104
+-------------+---------------------------------------------------------
+     ln_wage |     28,534    1.674907    .4780935          0   5.263916
+
+. 
+. * important: let Stata know that this is panel data (i.e. varies over
+. * individuals and time)
+. xtset idcode year
+
+Panel variable: idcode (unbalanced)
+ Time variable: year, 68 to 88, but with gaps
+         Delta: 1 unit
+
+. 
+. * describe panel data
+. xtdescribe
+
+  idcode:  1, 2, ..., 5159                                   n =       4711
+    year:  68, 69, ..., 88                                   T =         15
+           Delta(year) = 1 unit
+           Span(year)  = 21 periods
+           (idcode*year uniquely identifies each observation)
+
+Distribution of T_i:   min      5%     25%       50%       75%     95%     max
+                         1       1       3         5         9      13      15
+
+     Freq.  Percent    Cum. |  Pattern
+ ---------------------------+-----------------------
+      136      2.89    2.89 |  1....................
+      114      2.42    5.31 |  ....................1
+       89      1.89    7.20 |  .................1.11
+       87      1.85    9.04 |  ...................11
+       86      1.83   10.87 |  111111.1.11.1.11.1.11
+       61      1.29   12.16 |  ..............11.1.11
+       56      1.19   13.35 |  11...................
+       54      1.15   14.50 |  ...............1.1.11
+       54      1.15   15.64 |  .......1.11.1.11.1.11
+     3974     84.36  100.00 | (other patterns)
+ ---------------------------+-----------------------
+     4711    100.00         |  XXXXXX.X.XX.X.XX.X.XX
+
+. 
+. * summarize panel data
+. xtsum
+
+Variable         |      Mean   Std. dev.       Min        Max |    Observations
+-----------------+--------------------------------------------+----------------
+idcode   overall |  2601.284   1487.359          1       5159 |     N =   28534
+         between |              1487.57          1       5159 |     n =    4711
+         within  |                    0   2601.284   2601.284 | T-bar = 6.05689
+                 |                                            |
+year     overall |  77.95865   6.383879         68         88 |     N =   28534
+         between |             5.156521         68         88 |     n =    4711
+         within  |             5.138271   63.79198   92.70865 | T-bar = 6.05689
+                 |                                            |
+birth_yr overall |  48.08509   3.012837         41         54 |     N =   28534
+         between |             3.051795         41         54 |     n =    4711
+         within  |                    0   48.08509   48.08509 | T-bar = 6.05689
+                 |                                            |
+age      overall |  29.04511   6.700584         14         46 |     N =   28510
+         between |             5.485756         14         45 |     n =    4710
+         within  |              5.16945   14.79511   43.79511 | T-bar = 6.05308
+                 |                                            |
+race     overall |  1.303392   .4822773          1          3 |     N =   28534
+         between |             .4862111          1          3 |     n =    4711
+         within  |                    0   1.303392   1.303392 | T-bar = 6.05689
+                 |                                            |
+msp      overall |  .6029175   .4893019          0          1 |     N =   28518
+         between |             .3982385          0          1 |     n =    4711
+         within  |             .3238927  -.3304159   1.536251 | T-bar = 6.05349
+                 |                                            |
+nev_mar  overall |  .2296795   .4206341          0          1 |     N =   28518
+         between |             .3684416          0          1 |     n =    4711
+         within  |             .2456558  -.7036538   1.163013 | T-bar = 6.05349
+                 |                                            |
+grade    overall |  12.53259   2.323905          0         18 |     N =   28532
+         between |             2.566536          0         18 |     n =    4709
+         within  |                    0   12.53259   12.53259 | T-bar = 6.05904
+                 |                                            |
+collgrad overall |  .1680451   .3739129          0          1 |     N =   28534
+         between |             .4045558          0          1 |     n =    4711
+         within  |                    0   .1680451   .1680451 | T-bar = 6.05689
+                 |                                            |
+not_smsa overall |  .2824441   .4501961          0          1 |     N =   28526
+         between |             .4111053          0          1 |     n =    4711
+         within  |             .1834446  -.6461273   1.215777 | T-bar = 6.05519
+                 |                                            |
+c_city   overall |   .357218   .4791882          0          1 |     N =   28526
+         between |             .4271586          0          1 |     n =    4711
+         within  |             .2490022  -.5761154   1.290551 | T-bar = 6.05519
+                 |                                            |
+south    overall |  .4095562   .4917605          0          1 |     N =   28526
+         between |             .4667982          0          1 |     n =    4711
+         within  |             .1597932  -.5237771    1.34289 | T-bar = 6.05519
+                 |                                            |
+ind_code overall |  7.692973   2.994025          1         12 |     N =   28193
+         between |             2.542844          1         12 |     n =    4695
+         within  |             1.708429  -1.507027   17.12154 | T-bar =  6.0049
+                 |                                            |
+occ_code overall |  4.777672   3.065435          1         13 |     N =   28413
+         between |              2.86512          1         13 |     n =    4699
+         within  |             1.650248  -5.522328   15.44434 | T-bar = 6.04661
+                 |                                            |
+union    overall |  .2344319   .4236542          0          1 |     N =   19238
+         between |             .3341803          0          1 |     n =    4150
+         within  |             .2668622  -.6822348   1.151099 | T-bar = 4.63566
+                 |                                            |
+wks_ue   overall |  2.548095   7.294463          0         76 |     N =   22830
+         between |             5.181437          0         76 |     n =    4645
+         within  |                6.054  -33.95191   64.38143 | T-bar = 4.91496
+                 |                                            |
+ttl_exp  overall |  6.215316   4.652117          0   28.88461 |     N =   28534
+         between |             3.724221          0    24.7062 |     n =    4711
+         within  |             3.484133  -9.642671   20.38091 | T-bar = 6.05689
+                 |                                            |
+tenure   overall |  3.123836   3.751409          0   25.91667 |     N =   28101
+         between |             2.796519          0   21.16667 |     n =    4699
+         within  |             2.659784  -14.27894   15.62384 | T-bar = 5.98021
+                 |                                            |
+hours    overall |  36.55956   9.869623          1        168 |     N =   28467
+         between |             7.846585          1       83.5 |     n =    4710
+         within  |             7.520712  -2.154726   130.0596 | T-bar = 6.04395
+                 |                                            |
+wks_work overall |  53.98933   29.03232          0        104 |     N =   27831
+         between |             20.64508          0        104 |     n =    4686
+         within  |             23.96999  -18.43924    131.156 | T-bar = 5.93918
+                 |                                            |
+ln_wage  overall |  1.674907   .4780935          0   5.263916 |     N =   28534
+         between |              .424569          0   3.912023 |     n =    4711
+         within  |               .29266  -.4077221    4.78367 | T-bar = 6.05689
+
+. 
+. * create new variables
+. gen age2 = age^2
+(24 missing values generated)
+
+. gen collgradXnev_mar = collgrad * nev_mar
+(16 missing values generated)
+
+. gen days_ue = 7 * wks_ue
+(5,704 missing values generated)
+
+. gen annual_income = wks_work * hours * exp(ln_wage)
+(764 missing values generated)
+
+. 
+. * rename variables
+. rename age2 age_squared
+
+. inspect age_squared
+
+age_squared:                                    Number of observations
+--------------                         ---------------------------------------
+                                             Total      Integers   Nonintegers
+|      #                     Negative            -             -             -
+|  #   #                     Zero                -             -             -
+|  #   #                     Positive       28,510        28,510             -
+|  #   #   #                           -----------   -----------   -----------
+|  #   #   #   #             Total          28,510        28,510             -
+|  #   #   #   #   .         Missing            24
++----------------------                -----------
+196                2116                     28,534
+  (33 unique values)
+
+. rename age_squared age2
+
+. 
+. * replace values if they meet certain conditions
+. replace wks_work = 52 if wks_work > 52
+(12,156 real changes made)
+
+. 
+. * drop a variable
+. gen ln_wage_plus2 = ln_wage + 2
+
+. drop ln_wage_plus2
+
+. 
+. * recode certain values
+. recode race (0 = 1 "white") (1 = 2 "black") (2 = 3 "other"), gen(race2)
+(28231 differences between race and race2)
+
+. codebook race
+
+-----------------------------------------------------------------------------------------------
+race                                                                                       Race
+-----------------------------------------------------------------------------------------------
+
+                  Type: Numeric (byte)
+                 Label: racelbl
+
+                 Range: [1,3]                         Units: 1
+         Unique values: 3                         Missing .: 0/28,534
+
+            Tabulation: Freq.   Numeric  Label
+                       20,180         1  White
+                        8,051         2  Black
+                          303         3  Other
+
+. codebook race2
+
+-----------------------------------------------------------------------------------------------
+race2                                                                     RECODE of race (Race)
+-----------------------------------------------------------------------------------------------
+
+                  Type: Numeric (byte)
+                 Label: race2
+
+                 Range: [2,3]                         Units: 1
+         Unique values: 2                         Missing .: 0/28,534
+
+            Tabulation: Freq.   Numeric  Label
+                       20,180         2  black
+                        8,354         3  other
+
+. 
+. * drop data rows where age squared is missing
+. drop if missing(age2)
+(24 observations deleted)
+
+. 
+. * take a 25% random sample of the data
+. sample 25
+(21,382 observations deleted)
+
+. 
+. * close logfile
+. log close
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/04_transform.log
+  log type:  text
+ closed on:  30 Aug 2022, 16:27:43
+-----------------------------------------------------------------------------------------------

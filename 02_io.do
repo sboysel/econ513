@@ -29,7 +29,11 @@ summarize
 
 * use a sample dataset from https://www.stata-press.com/data/r17/
 * see `help webuse`
-* webuse nlswork, clear
+webuse nlswork, clear
+summarize
+
+* cache for future use
+save "data/nlswork.dta", replace
 
 * end session by closing logfile
 log close

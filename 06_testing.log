@@ -1,0 +1,257 @@
+-----------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/06_testing.log
+  log type:  text
+ opened on:  30 Aug 2022, 16:29:48
+
+. 
+. * load nlswork data (National Longitudinal Survey of Young Women, 14-24 years
+. * old in 1968)
+. import excel "data/nlswork.xls", sheet("Sheet1") firstrow clear
+(21 vars, 28,534 obs)
+
+. sum
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+      idcode |     28,534    2601.284    1487.359          1       5159
+        year |     28,534    77.95865    6.383879         68         88
+    birth_yr |     28,534    48.08509    3.012837         41         54
+         age |     28,510    29.04511    6.700584         14         46
+        race |          0
+-------------+---------------------------------------------------------
+         msp |     28,518    .6029175    .4893019          0          1
+     nev_mar |     28,518    .2296795    .4206341          0          1
+       grade |     28,532    12.53259    2.323905          0         18
+    collgrad |     28,534    .1680451    .3739129          0          1
+    not_smsa |     28,526    .2824441    .4501961          0          1
+-------------+---------------------------------------------------------
+      c_city |     28,526     .357218    .4791882          0          1
+       south |     28,526    .4095562    .4917605          0          1
+    ind_code |     28,193    7.692973    2.994025          1         12
+    occ_code |     28,413    4.777672    3.065435          1         13
+       union |     19,238    .2344319    .4236542          0          1
+-------------+---------------------------------------------------------
+      wks_ue |     22,830    2.548095    7.294463          0         76
+     ttl_exp |     28,534    6.215316    4.652117          0   28.88461
+      tenure |     28,101    3.123836    3.751409          0   25.91667
+       hours |     28,467    36.55956    9.869623          1        168
+    wks_work |     27,831    53.98933    29.03232          0        104
+-------------+---------------------------------------------------------
+     ln_wage |     28,534    1.674907    .4780935          0   5.263916
+
+. 
+. * important: let Stata know that this is panel data (i.e. varies over
+. * individuals and time)
+. xtset idcode year
+
+Panel variable: idcode (unbalanced)
+ Time variable: year, 68 to 88, but with gaps
+         Delta: 1 unit
+
+. 
+. * convert race to categorical
+. egen racec = group(race) 
+
+. label define race_label 1 "Black" 2 "Other" 3 "White"
+
+. label values racec race_label
+
+. 
+. * create some additional variables
+. gen age2 = age^2
+(24 missing values generated)
+
+. gen ln_wage_l1 = l.ln_wage
+(17,643 missing values generated)
+
+. 
+. * baseline regression
+. xtreg ln_wage age
+
+Random-effects GLS regression                   Number of obs     =     28,510
+Group variable: idcode                          Number of groups  =      4,710
+
+R-squared:                                      Obs per group:
+     Within  = 0.1026                                         min =          1
+     Between = 0.0877                                         avg =        6.1
+     Overall = 0.0774                                         max =         15
+
+                                                Wald chi2(1)      =    3140.35
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0185667   .0003313    56.04   0.000     .0179174    .0192161
+       _cons |   1.120439   .0112038   100.01   0.000      1.09848    1.142398
+-------------+----------------------------------------------------------------
+     sigma_u |  .36972456
+     sigma_e |  .30349389
+         rho |  .59743613   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. /*
+> Wald Test: 
+>     
+>     Performs a test to determine if there is sufficient evidence to suggest a
+>     the data fits "unrestricted" version of the model relative to a "restricted"
+>     version.  Often used simply to test if certain coefficients are non-zero.
+> 
+> Example:  Does age have a statistically significant impact on log wage?
+> 
+>     Null Hypothesis:          coef(age) = 0
+>     Alternative Hypothesis:   coef(age) != 0
+> */
+. 
+. test age
+
+ ( 1)  age = 0
+
+           chi2(  1) = 3140.35
+         Prob > chi2 =    0.0000
+
+. 
+. /*
+> Chow Test:
+> 
+>     Performs a test to determine if different subsamples have significantly
+>     different estimated coefficients.  Often used in time series analysis (i.e.
+>     event studies using pre and post periods) to detect "structural breaks"
+> 
+> Example: Is the effect of age on log wage any different for year after 1978?
+> 
+>     Null Hypothesis:          coef(age | year > 1978) = coef(age | age <= 1978)
+>     Alternative Hypothesis:   coef(age | year > 1978) = coef(age | age <= 1978)
+> 
+> Reference:
+>     
+>     https://www.stata.com/support/faqs/statistics/chow-tests/
+>     https://www.stata.com/support/faqs/statistics/computing-chow-statistic/
+> */
+. 
+. * generate post 1978 indicator
+. gen post = year > 78
+
+. 
+. * estimate the model separately for the pre and post subsamples
+. xtreg ln_wage age if post==1
+
+Random-effects GLS regression                   Number of obs     =     12,425
+Group variable: idcode                          Number of groups  =      3,467
+
+R-squared:                                      Obs per group:
+     Within  = 0.0615                                         min =          1
+     Between = 0.0002                                         avg =        3.6
+     Overall = 0.0053                                         max =          6
+
+                                                Wald chi2(1)      =     499.86
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0207038    .000926    22.36   0.000     .0188889    .0225188
+       _cons |   1.033706   .0336082    30.76   0.000     .9678353    1.099577
+-------------+----------------------------------------------------------------
+     sigma_u |  .44582227
+     sigma_e |    .282917
+         rho |  .71290471   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg ln_wage age if post==0
+
+Random-effects GLS regression                   Number of obs     =     16,085
+Group variable: idcode                          Number of groups  =      3,913
+
+R-squared:                                      Obs per group:
+     Within  = 0.0892                                         min =          1
+     Between = 0.0688                                         avg =        4.1
+     Overall = 0.0657                                         max =          9
+
+                                                Wald chi2(1)      =    1464.33
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |    .028419   .0007427    38.27   0.000     .0269634    .0298746
+       _cons |   .8733538   .0188551    46.32   0.000     .8363984    .9103091
+-------------+----------------------------------------------------------------
+     sigma_u |   .3295889
+     sigma_e |  .26759946
+         rho |  .60269562   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * estimate the model with the full sample
+. xtreg ln_wage age
+
+Random-effects GLS regression                   Number of obs     =     28,510
+Group variable: idcode                          Number of groups  =      4,710
+
+R-squared:                                      Obs per group:
+     Within  = 0.1026                                         min =          1
+     Between = 0.0877                                         avg =        6.1
+     Overall = 0.0774                                         max =         15
+
+                                                Wald chi2(1)      =    3140.35
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0185667   .0003313    56.04   0.000     .0179174    .0192161
+       _cons |   1.120439   .0112038   100.01   0.000      1.09848    1.142398
+-------------+----------------------------------------------------------------
+     sigma_u |  .36972456
+     sigma_e |  .30349389
+         rho |  .59743613   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. /*
+> From the output of the 3 regresson results above, you should be able to
+> compute the Chow test statistic using the formula contained in these notes:
+> https://www.stata.com/support/faqs/statistics/computing-chow-statistic/  
+> */
+. 
+. * Alternatively you can esitmate a joint, fully interacted model and perform the
+. * test directly with Stata
+. generate postXage = post*age
+(24 missing values generated)
+
+. regress y age post postXage
+
+      Source |       SS           df       MS      Number of obs   =    28,510
+-------------+----------------------------------   F(3, 28506)     =  66790.82
+       Model |  1016093.01         3   338697.67   Prob > F        =    0.0000
+    Residual |  144554.534    28,506  5.07102132   R-squared       =    0.8755
+-------------+----------------------------------   Adj R-squared   =    0.8754
+       Total |  1160647.54    28,509   40.711619   Root MSE        =    2.2519
+
+------------------------------------------------------------------------------
+        year | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .5686125   .0046075   123.41   0.000     .5595816    .5776434
+        post |   9.301895   .2036982    45.67   0.000     8.902637    9.701154
+    postXage |  -.1182645   .0066378   -17.82   0.000     -.131275   -.1052541
+       _cons |   59.19834   .1135179   521.49   0.000     58.97584    59.42084
+------------------------------------------------------------------------------
+
+. test post postXage
+
+ ( 1)  post = 0
+ ( 2)  postXage = 0
+
+       F(  2, 28506) = 8421.97
+            Prob > F =    0.0000
+
+. 
+end of do-file
+
+
+. clear
+
+. exit

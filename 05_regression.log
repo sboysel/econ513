@@ -1,0 +1,441 @@
+-----------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/05_regression.log
+  log type:  text
+ opened on:  30 Aug 2022, 16:29:27
+
+. 
+. * load nlswork data (National Longitudinal Survey of Young Women, 14-24 years
+. * old in 1968)
+. import excel "data/nlswork.xls", sheet("Sheet1") firstrow clear
+(21 vars, 28,534 obs)
+
+. sum
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+      idcode |     28,534    2601.284    1487.359          1       5159
+        year |     28,534    77.95865    6.383879         68         88
+    birth_yr |     28,534    48.08509    3.012837         41         54
+         age |     28,510    29.04511    6.700584         14         46
+        race |          0
+-------------+---------------------------------------------------------
+         msp |     28,518    .6029175    .4893019          0          1
+     nev_mar |     28,518    .2296795    .4206341          0          1
+       grade |     28,532    12.53259    2.323905          0         18
+    collgrad |     28,534    .1680451    .3739129          0          1
+    not_smsa |     28,526    .2824441    .4501961          0          1
+-------------+---------------------------------------------------------
+      c_city |     28,526     .357218    .4791882          0          1
+       south |     28,526    .4095562    .4917605          0          1
+    ind_code |     28,193    7.692973    2.994025          1         12
+    occ_code |     28,413    4.777672    3.065435          1         13
+       union |     19,238    .2344319    .4236542          0          1
+-------------+---------------------------------------------------------
+      wks_ue |     22,830    2.548095    7.294463          0         76
+     ttl_exp |     28,534    6.215316    4.652117          0   28.88461
+      tenure |     28,101    3.123836    3.751409          0   25.91667
+       hours |     28,467    36.55956    9.869623          1        168
+    wks_work |     27,831    53.98933    29.03232          0        104
+-------------+---------------------------------------------------------
+     ln_wage |     28,534    1.674907    .4780935          0   5.263916
+
+. 
+. * important: let Stata know that this is panel data (i.e. varies over
+. * individuals and time)
+. xtset idcode year
+
+Panel variable: idcode (unbalanced)
+ Time variable: year, 68 to 88, but with gaps
+         Delta: 1 unit
+
+. 
+. * convert race to categorical
+. egen racec = group(race) 
+
+. label define race_label 1 "Black" 2 "Other" 3 "White"
+
+. label values racec race_label
+
+. * tabulate racec race
+. 
+. * create some additional variables
+. gen age2 = age^2
+(24 missing values generated)
+
+. gen ln_wage_l1 = l.ln_wage
+(17,643 missing values generated)
+
+. egen med_ln_wage = median(ln_wage)
+
+. gen hi_wage = 1 if ln_wage > med_ln_wage
+(14,267 missing values generated)
+
+. 
+. * baseline regression
+. xtreg ln_wage age
+
+Random-effects GLS regression                   Number of obs     =     28,510
+Group variable: idcode                          Number of groups  =      4,710
+
+R-squared:                                      Obs per group:
+     Within  = 0.1026                                         min =          1
+     Between = 0.0877                                         avg =        6.1
+     Overall = 0.0774                                         max =         15
+
+                                                Wald chi2(1)      =    3140.35
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0185667   .0003313    56.04   0.000     .0179174    .0192161
+       _cons |   1.120439   .0112038   100.01   0.000      1.09848    1.142398
+-------------+----------------------------------------------------------------
+     sigma_u |  .36972456
+     sigma_e |  .30349389
+         rho |  .59743613   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * add a quadratic term for age
+. xtreg ln_wage age age2
+
+Random-effects GLS regression                   Number of obs     =     28,510
+Group variable: idcode                          Number of groups  =      4,710
+
+R-squared:                                      Obs per group:
+     Within  = 0.1087                                         min =          1
+     Between = 0.1015                                         avg =        6.1
+     Overall = 0.0870                                         max =         15
+
+                                                Wald chi2(2)      =    3388.51
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0590339   .0027172    21.73   0.000     .0537083    .0643596
+        age2 |  -.0006758   .0000451   -15.00   0.000    -.0007641   -.0005876
+       _cons |   .5479714   .0397476    13.79   0.000     .4700675    .6258752
+-------------+----------------------------------------------------------------
+     sigma_u |   .3654049
+     sigma_e |  .30245467
+         rho |  .59342665   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * add (endogenous) lag of log wages
+. xtreg ln_wage ln_wage_l1
+
+Random-effects GLS regression                   Number of obs     =     10,891
+Group variable: idcode                          Number of groups  =      3,700
+
+R-squared:                                      Obs per group:
+     Within  = 0.2294                                         min =          1
+     Between = 0.6829                                         avg =        2.9
+     Overall = 0.5711                                         max =          8
+
+                                                Wald chi2(1)      =    9368.61
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  ln_wage_l1 |   .7076907   .0073115    96.79   0.000     .6933604    .7220209
+       _cons |   .5390626   .0126814    42.51   0.000     .5142075    .5639177
+-------------+----------------------------------------------------------------
+     sigma_u |  .15848453
+     sigma_e |  .26743678
+         rho |  .25990691   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * add dummy variables for categorical racec variables
+. xtreg ln_wage i.racec
+
+Random-effects GLS regression                   Number of obs     =     28,534
+Group variable: idcode                          Number of groups  =      4,711
+
+R-squared:                                      Obs per group:
+     Within  = 0.0000                                         min =          1
+     Between = 0.0198                                         avg =        6.1
+     Overall = 0.0186                                         max =         15
+
+                                                Wald chi2(2)      =      99.02
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       racec |
+      Other  |   .2311856   .0569826     4.06   0.000     .1195018    .3428695
+      White  |   .1300382    .013486     9.64   0.000     .1036062    .1564702
+             |
+       _cons |   1.561718   .0114116   136.85   0.000     1.539351    1.584084
+-------------+----------------------------------------------------------------
+     sigma_u |  .38195681
+     sigma_e |  .32028665
+         rho |  .58714668   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * changeing the base category
+. xtreg ln_wage ib2.racec
+
+Random-effects GLS regression                   Number of obs     =     28,534
+Group variable: idcode                          Number of groups  =      4,711
+
+R-squared:                                      Obs per group:
+     Within  = 0.0000                                         min =          1
+     Between = 0.0198                                         avg =        6.1
+     Overall = 0.0186                                         max =         15
+
+                                                Wald chi2(2)      =      99.02
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       racec |
+      Black  |  -.2311856   .0569826    -4.06   0.000    -.3428695   -.1195018
+      White  |  -.1011474   .0562889    -1.80   0.072    -.2114716    .0091768
+             |
+       _cons |   1.792903   .0558282    32.11   0.000     1.683482    1.902325
+-------------+----------------------------------------------------------------
+     sigma_u |  .38195681
+     sigma_e |  .32028665
+         rho |  .58714668   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. xtreg ln_wage ib3.racec
+
+Random-effects GLS regression                   Number of obs     =     28,534
+Group variable: idcode                          Number of groups  =      4,711
+
+R-squared:                                      Obs per group:
+     Within  = 0.0000                                         min =          1
+     Between = 0.0198                                         avg =        6.1
+     Overall = 0.0186                                         max =         15
+
+                                                Wald chi2(2)      =      99.02
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       racec |
+      Black  |  -.1300382    .013486    -9.64   0.000    -.1564702   -.1036062
+      Other  |   .1011474   .0562889     1.80   0.072    -.0091768    .2114716
+             |
+       _cons |   1.691756   .0071865   235.41   0.000     1.677671    1.705841
+-------------+----------------------------------------------------------------
+     sigma_u |  .38195681
+     sigma_e |  .32028665
+         rho |  .58714668   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * interaction between union status and whether the individual is in a central
+. * city
+. xtreg ln_wage union#c_city
+
+Random-effects GLS regression                   Number of obs     =     19,235
+Group variable: idcode                          Number of groups  =      4,150
+
+R-squared:                                      Obs per group:
+     Within  = 0.0146                                         min =          1
+     Between = 0.0650                                         avg =        4.6
+     Overall = 0.0423                                         max =         12
+
+                                                Wald chi2(3)      =     397.77
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+union#c_city |
+        0 1  |   .0091604     .00825     1.11   0.267    -.0070092    .0253301
+        1 0  |   .1455104   .0085934    16.93   0.000     .1286675    .1623532
+        1 1  |   .1335428   .0115538    11.56   0.000     .1108978    .1561879
+             |
+       _cons |    1.68599   .0072016   234.11   0.000     1.671875    1.700105
+-------------+----------------------------------------------------------------
+     sigma_u |  .38395869
+     sigma_e |  .27367206
+         rho |  .66311546   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * continuous interactions between union status and age 
+. xtreg ln_wage union#c.age
+
+Random-effects GLS regression                   Number of obs     =     19,229
+Group variable: idcode                          Number of groups  =      4,150
+
+R-squared:                                      Obs per group:
+     Within  = 0.0955                                         min =          1
+     Between = 0.0511                                         avg =        4.6
+     Overall = 0.0612                                         max =         12
+
+                                                Wald chi2(2)      =    1811.14
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ union#c.age |
+          0  |   .0138502   .0003998    34.64   0.000     .0130666    .0146339
+          1  |   .0179297   .0004241    42.28   0.000     .0170986    .0187609
+             |
+       _cons |   1.258581   .0139253    90.38   0.000     1.231288    1.285874
+-------------+----------------------------------------------------------------
+     sigma_u |  .38477399
+     sigma_e |  .26212774
+         rho |  .68301198   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * add some more covariates
+. xtreg ln_wage age age2 ln_wage_l1 i.racec msp nev_mar collgrad grade c_city south union ttl_e
+> xp tenure 
+
+Random-effects GLS regression                   Number of obs     =      7,170
+Group variable: idcode                          Number of groups  =      3,075
+
+R-squared:                                      Obs per group:
+     Within  = 0.3680                                         min =          1
+     Between = 0.7213                                         avg =        2.3
+     Overall = 0.6813                                         max =          7
+
+                                                Wald chi2(14)     =   10266.75
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+------------------------------------------------------------------------------
+     ln_wage | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0012081   .0040437     0.30   0.765    -.0067173    .0091336
+        age2 |  -.0000737   .0000635    -1.16   0.246    -.0001982    .0000507
+  ln_wage_l1 |   .6045004   .0090582    66.73   0.000     .5867466    .6222542
+             |
+       racec |
+      Other  |   .0553153   .0393611     1.41   0.160    -.0218311    .1324617
+      White  |   .0393295   .0097364     4.04   0.000     .0202466    .0584124
+             |
+         msp |  -.0056493   .0086534    -0.65   0.514    -.0226097     .011311
+     nev_mar |   .0017977   .0112634     0.16   0.873    -.0202781    .0238735
+    collgrad |   .0218177   .0163699     1.33   0.183    -.0102667    .0539021
+       grade |   .0277818   .0028846     9.63   0.000      .022128    .0334356
+      c_city |   .0212655   .0075332     2.82   0.005     .0065007    .0360302
+       south |   -.052086   .0082231    -6.33   0.000     -.068203   -.0359691
+       union |   .0693309   .0077473     8.95   0.000     .0541465    .0845152
+     ttl_exp |   .0109352   .0013425     8.15   0.000      .008304    .0135664
+      tenure |     .00054   .0010269     0.53   0.599    -.0014727    .0025527
+       _cons |   .3008888   .0714038     4.21   0.000     .1609399    .4408378
+-------------+----------------------------------------------------------------
+     sigma_u |   .1588242
+     sigma_e |  .19858529
+         rho |  .39011199   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * adding robust standard errors
+. xtreg ln_wage age age2 ln_wage_l1 i.racec msp nev_mar collgrad grade c_city south union ttl_e
+> xp tenure, vce(robust) 
+
+Random-effects GLS regression                   Number of obs     =      7,170
+Group variable: idcode                          Number of groups  =      3,075
+
+R-squared:                                      Obs per group:
+     Within  = 0.3680                                         min =          1
+     Between = 0.7213                                         avg =        2.3
+     Overall = 0.6813                                         max =          7
+
+                                                Wald chi2(14)     =    6903.34
+corr(u_i, X) = 0 (assumed)                      Prob > chi2       =     0.0000
+
+                             (Std. err. adjusted for 3,075 clusters in idcode)
+------------------------------------------------------------------------------
+             |               Robust
+     ln_wage | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0012081   .0046681     0.26   0.796    -.0079412    .0103575
+        age2 |  -.0000737   .0000758    -0.97   0.330    -.0002222    .0000748
+  ln_wage_l1 |   .6045004    .017755    34.05   0.000     .5697012    .6392996
+             |
+       racec |
+      Other  |   .0553153   .0488006     1.13   0.257    -.0403321    .1509627
+      White  |   .0393295    .008829     4.45   0.000      .022025     .056634
+             |
+         msp |  -.0056493   .0081464    -0.69   0.488     -.021616    .0103174
+     nev_mar |   .0017977   .0107289     0.17   0.867    -.0192306     .022826
+    collgrad |   .0218177   .0167169     1.31   0.192    -.0109468    .0545822
+       grade |   .0277818   .0031546     8.81   0.000     .0215988    .0339648
+      c_city |   .0212655   .0069296     3.07   0.002     .0076837    .0348472
+       south |   -.052086    .008338    -6.25   0.000    -.0684283   -.0357438
+       union |   .0693309   .0082898     8.36   0.000     .0530832    .0855786
+     ttl_exp |   .0109352   .0015465     7.07   0.000     .0079041    .0139663
+      tenure |     .00054   .0011834     0.46   0.648    -.0017795    .0028596
+       _cons |   .3008888    .077483     3.88   0.000     .1490249    .4527528
+-------------+----------------------------------------------------------------
+     sigma_u |   .1588242
+     sigma_e |  .19858529
+         rho |  .39011199   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. * adding fixed effects
+. xtreg ln_wage age age2 ln_wage_l1 i.racec msp nev_mar collgrad grade c_city south union ttl_e
+> xp tenure, fe vce(robust) 
+note: 2.racec omitted because of collinearity.
+note: 3.racec omitted because of collinearity.
+note: collgrad omitted because of collinearity.
+note: grade omitted because of collinearity.
+
+Fixed-effects (within) regression               Number of obs     =      7,170
+Group variable: idcode                          Number of groups  =      3,075
+
+R-squared:                                      Obs per group:
+     Within  = 0.3835                                         min =          1
+     Between = 0.6778                                         avg =        2.3
+     Overall = 0.6301                                         max =          7
+
+                                                F(10,3074)        =     144.32
+corr(u_i, Xb) = 0.4680                          Prob > F          =     0.0000
+
+                             (Std. err. adjusted for 3,075 clusters in idcode)
+------------------------------------------------------------------------------
+             |               Robust
+     ln_wage | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         age |   .0110726    .005818     1.90   0.057    -.0003349    .0224802
+        age2 |  -.0002755   .0000986    -2.79   0.005    -.0004689   -.0000822
+  ln_wage_l1 |   .4005153    .024213    16.54   0.000       .35304    .4479906
+             |
+       racec |
+      Other  |          0  (omitted)
+      White  |          0  (omitted)
+             |
+         msp |  -.0199709    .011787    -1.69   0.090    -.0430822    .0031403
+     nev_mar |  -.0085741   .0173036    -0.50   0.620    -.0425019    .0253537
+    collgrad |          0  (omitted)
+       grade |          0  (omitted)
+      c_city |    .005665   .0132578     0.43   0.669    -.0203301    .0316601
+       south |  -.0666289   .0292006    -2.28   0.023    -.1238835   -.0093743
+       union |   .0783195   .0125599     6.24   0.000     .0536928    .1029462
+     ttl_exp |   .0198749   .0036528     5.44   0.000     .0127128     .027037
+      tenure |   .0005891   .0015847     0.37   0.710     -.002518    .0036962
+       _cons |   .8912714   .0947706     9.40   0.000     .7054512    1.077092
+-------------+----------------------------------------------------------------
+     sigma_u |  .27854549
+     sigma_e |  .19858529
+         rho |  .66300745   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /home/sam/repos/econ513/05_regression.log
+  log type:  text
+ closed on:  30 Aug 2022, 16:29:33
+-----------------------------------------------------------------------------------------------
