@@ -10,28 +10,47 @@ Stata usage.  Data used is either available with a network connection (e.g.
 
 ## Usage
 
-1. Download this reposiotory as a `.zip` file
+1. Download this reposiotory as a `.zip` file.  Click the green "Code" button
+   above and select "Download ZIP".
 2. Extract the contents of the archive (e.g. `econ513.zip`) to a working
-   directory. For example, on my machine there is a subdirectory of my home
-   directory called `repos`, where I keep all my repositories.  I'd like to keep
-   the code and data in this repository in a subdirectory of `repos` called
-   `econ513`.  So I would extract the contents of the `econ513.zip` into the
-   directory `/home/sam/repos/`.  This will be slightly different on your
-   machine and operating system.
+   directory.  See the section on [directory paths](#directory-paths) below for
+   more details.
 3. Open Stata
 4. Each `.do` file changes the working directory to the one on my system (e.g.
    `~/repos/econ513`).  Change this value to the full path name of your working
-   directory.  On Windows, this will be something like
-   ```
-   cd "C:\Users\yourusername\repos\econ513" 
-   ```
-   On Mac OS X
-   ```
-   cd "/Users/yourusername/repos/econ513"
-   ```
+   directory.
 5. Try running each `.do` file in Stata and inspecting the output of the
    commands in the corresponding `.log` file, which will be generated in the
    same working directory. 
+
+## Directory Paths
+
+For each project or assignment you do, you should keep all code, data, logfiles,
+and additional documnetation within a *working directory*.
+
+For example, on my machine there is a subdirectory of my home directory called
+`repos`, where I keep all my repositories.  I'd like to keep the code and data
+in this repository in a subdirectory of `repos` called `econ513`.  So I would
+extract the contents of the `econ513.zip` into the directory `/home/sam/repos/`.
+
+This will be slightly different on your machine and operating system.  On Windows, 
+this will be something like
+
+```
+cd "C:\Users\yourusername\repos\econ513" 
+```
+
+On Mac OS X
+
+```
+cd "/Users/yourusername/repos/econ513"
+```
+
+*WARNING:*  Notice that pathnames in Windows contain backslashes (`\`) and
+pathnames in Mac OS X / Unix / Linux contain forward slashes (`/`).  You will
+need to make sure to change the references to filepaths in this code accordingly
+to match your operating system.  This is a common issue encountered when running
+someone else's code on your machine.
 
 ## General recommendations
 
