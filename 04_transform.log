@@ -1,13 +1,13 @@
------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
       name:  <unnamed>
        log:  /home/sam/repos/econ513/04_transform.log
   log type:  text
- opened on:  30 Aug 2022, 16:27:41
+ opened on:   7 Sep 2022, 11:09:01
 
 . 
 . * load nlswork data (National Longitudinal Survey of Young Women, 14-24 years
 . * old in 1968)
-. webuse nlswork, clear
+. use "data/nlswork.dta", clear
 (National Longitudinal Survey of Young Women, 14-24 years old in 1968)
 
 . summarize
@@ -220,9 +220,9 @@ age_squared:                                    Number of observations
 
 . codebook race
 
------------------------------------------------------------------------------------------------
-race                                                                                       Race
------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+race                                                                                                         Race
+-----------------------------------------------------------------------------------------------------------------
 
                   Type: Numeric (byte)
                  Label: racelbl
@@ -237,9 +237,9 @@ race                                                                            
 
 . codebook race2
 
------------------------------------------------------------------------------------------------
-race2                                                                     RECODE of race (Race)
------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+race2                                                                                       RECODE of race (Race)
+-----------------------------------------------------------------------------------------------------------------
 
                   Type: Numeric (byte)
                  Label: race2
@@ -250,6 +250,24 @@ race2                                                                     RECODE
             Tabulation: Freq.   Numeric  Label
                        20,180         2  black
                         8,354         3  other
+
+. 
+. * convert string to numeric
+. * Reference: https://www.stata.com/support/faqs/data-management/encoding-string-variable/
+. gen x = "1"
+
+. * mean x // will throw error
+. encode x, gen(nx)
+
+. mean nx // will work, since nx is numeric
+
+Mean estimation                         Number of obs = 28,534
+
+--------------------------------------------------------------
+             |       Mean   Std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+          nx |          1          0             .           .
+--------------------------------------------------------------
 
 . 
 . * drop data rows where age squared is missing
@@ -267,5 +285,5 @@ race2                                                                     RECODE
       name:  <unnamed>
        log:  /home/sam/repos/econ513/04_transform.log
   log type:  text
- closed on:  30 Aug 2022, 16:27:43
------------------------------------------------------------------------------------------------
+ closed on:   7 Sep 2022, 11:09:02
+-----------------------------------------------------------------------------------------------------------------

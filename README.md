@@ -122,7 +122,7 @@ technical computing tools).
 Open documentation within Stata
 
 ```stata
-. help reg
+help reg
 ```
 
 If you see a command you don't understand or run into an error running a

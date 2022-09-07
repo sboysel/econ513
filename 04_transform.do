@@ -46,6 +46,13 @@ recode race (0 = 1 "white") (1 = 2 "black") (2 = 3 "other"), gen(race2)
 codebook race
 codebook race2
 
+* convert string to numeric
+* Reference: https://www.stata.com/support/faqs/data-management/encoding-string-variable/
+gen x = "1"
+* mean x // will throw error
+encode x, gen(nx)
+mean nx // will work, since nx is numeric
+
 * drop data rows where age squared is missing
 drop if missing(age2)
 
